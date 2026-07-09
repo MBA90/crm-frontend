@@ -29,7 +29,14 @@ export class Sidebar extends StoreComponent {
           <div className="brand__mark">
             <svg viewBox="0 0 32 32" fill="none">
               <path
-                d="M9 22V10l7 8 7-8v12"
+                d="M11 15L16 9l5 6"
+                stroke="#fff"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M8 18.5Q16 24 24 18.5"
                 stroke="#fff"
                 strokeWidth="2.6"
                 strokeLinecap="round"
@@ -38,8 +45,7 @@ export class Sidebar extends StoreComponent {
             </svg>
           </div>
           <div>
-            <div className="brand__name">Nexus</div>
-            <div className="brand__sub">CRM</div>
+            <div className="brand__name">Sanad</div>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Icon } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
 import { crmStore } from "@/store/CrmStore";
+import { authStore, type AuthUser } from "@/auth/AuthStore";
 import { fullName, initials } from "@/lib/format";
 import { withRouter, type RouterProps } from "@/lib/withRouter";
 
@@ -26,11 +27,24 @@ class TopbarBase extends React.Component<TopbarProps, TopbarState> {
   state: TopbarState = { query: "", open: false };
   private rootRef = React.createRef<HTMLDivElement>();
 
+  private unsubscribeAuth: (() => void) | null = null;
+
   componentDidMount(): void {
     document.addEventListener("mousedown", this.handleOutside);
+    this.unsubscribeAuth = authStore.subscribe(() => this.forceUpdate());
   }
   componentWillUnmount(): void {
     document.removeEventListener("mousedown", this.handleOutside);
+    this.unsubscribeAuth?.();
+    this.unsubscribeAuth = null;
+  }
+
+  private avatarLabel(user: AuthUser | null): string {
+    if (user?.firstName || user?.lastName) {
+      return initials(user.firstName ?? "", user.lastName ?? "");
+    }
+    const source = user?.name ?? user?.username ?? user?.email ?? "?";
+    return source.slice(0, 2).toUpperCase();
   }
 
   private handleOutside = (e: MouseEvent): void => {
@@ -84,6 +98,7 @@ class TopbarBase extends React.Component<TopbarProps, TopbarState> {
     const { title } = this.props;
     const { query, open } = this.state;
     const hits = open ? this.results() : [];
+    const user = authStore.getState().user;
 
     return (
       <header className="topbar">
@@ -171,7 +186,30 @@ class TopbarBase extends React.Component<TopbarProps, TopbarState> {
         <button className="btn btn--ghost btn--icon" aria-label="Notifications">
           <Icon name="inbox" size={18} />
         </button>
-        <Avatar label={initials("Alex", "Rivera")} seed="account-owner" size="sm" />
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ textAlign: "right", lineHeight: 1.2 }}>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>
+              {user?.name ?? user?.username ?? "Account"}
+            </div>
+            {user?.email && (
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>{user.email}</div>
+            )}
+          </div>
+          <Avatar
+            label={this.avatarLabel(user)}
+            seed={user?.sub ?? "account-owner"}
+            size="sm"
+          />
+          <button
+            className="btn btn--ghost btn--icon"
+            aria-label="Sign out"
+            title="Sign out"
+            onClick={() => authStore.logout()}
+          >
+            <Icon name="log-out" size={18} />
+          </button>
+        </div>
       </header>
     );
   }
