@@ -8,6 +8,9 @@ import { ContactDetailPage } from "@/pages/ContactDetailPage";
 import { CompaniesPage } from "@/pages/CompaniesPage";
 import { TasksPage } from "@/pages/TasksPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { RequireAuth } from "@/auth/RequireAuth";
 import { ToastHost } from "@/components/ui/Toast";
 
 export class App extends React.Component {
@@ -15,7 +18,15 @@ export class App extends React.Component {
     return (
       <BrowserRouter>
         <Routes>
-          <Route element={<AppLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route
+            element={
+              <RequireAuth>
+                <AppLayout />
+              </RequireAuth>
+            }
+          >
             <Route index element={<DashboardPage />} />
             <Route path="deals" element={<DealsPage />} />
             <Route path="contacts" element={<ContactsPage />} />

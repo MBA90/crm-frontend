@@ -49,7 +49,7 @@ export class SettingsPage extends StoreComponent<{}, SettingsState> {
                 </div>
                 <dl className="kv">
                   <dt>Email</dt>
-                  <dd>alex.rivera@nexuscrm.app</dd>
+                  <dd>alex.rivera@sanadcrm.app</dd>
                   <dt>Role</dt>
                   <dd>Sales Manager</dd>
                   <dt>Timezone</dt>
@@ -140,7 +140,7 @@ export class SettingsPage extends StoreComponent<{}, SettingsState> {
               </div>
               <div className="card__body">
                 <p style={{ margin: 0, color: "var(--text-2)", lineHeight: 1.6 }}>
-                  Nexus CRM — a demo customer-relationship manager built with React,
+                  Sanad — a demo customer-relationship manager built with React,
                   TypeScript, and class components. No backend required; state persists
                   in your browser via localStorage.
                 </p>

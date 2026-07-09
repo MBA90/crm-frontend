@@ -10,7 +10,7 @@ import { DEAL_STAGES } from "@/types";
 import { buildSeed } from "@/data/seed";
 import { fullName, todayISO, uid } from "@/lib/format";
 
-const STORAGE_KEY = "nexus-crm.state.v1";
+const STORAGE_KEY = "sanad-crm.state.v1";
 type Listener = () => void;
 
 /**
