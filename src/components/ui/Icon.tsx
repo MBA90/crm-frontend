@@ -29,7 +29,9 @@ export type IconName =
   | "target"
   | "sparkle"
   | "download"
-  | "inbox";
+  | "inbox"
+  | "log-out"
+  | "log-in";
 
 interface IconProps {
   name: IconName;
@@ -214,6 +216,18 @@ export class Icon extends React.Component<IconProps> {
       <>
         <path d="M22 12h-6l-2 3h-4l-2-3H2" />
         <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+      </>
+    ),
+    "log-out": (
+      <>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <path d="M16 17l5-5-5-5M21 12H9" />
+      </>
+    ),
+    "log-in": (
+      <>
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+        <path d="M10 17l5-5-5-5M15 12H3" />
       </>
     ),
   };

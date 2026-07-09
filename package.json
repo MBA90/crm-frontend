@@ -1,8 +1,8 @@
 {
-  "name": "nexus-crm",
+  "name": "sanad-crm",
   "version": "1.0.0",
   "private": true,
-  "description": "Nexus CRM — a full CRM frontend built with React + TypeScript class components",
+  "description": "Sanad — a full CRM frontend built with React + TypeScript class components",
   "type": "module",
   "scripts": {
     "dev": "vite",

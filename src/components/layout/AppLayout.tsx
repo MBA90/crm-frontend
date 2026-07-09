@@ -20,7 +20,7 @@ const TITLES: { match: (path: string) => boolean; title: string }[] = [
 class AppLayoutBase extends React.Component<AppLayoutProps> {
   private title(): string {
     const path = this.props.router.location.pathname;
-    return TITLES.find((t) => t.match(path))?.title ?? "Nexus CRM";
+    return TITLES.find((t) => t.match(path))?.title ?? "Sanad";
   }
 
   render(): React.ReactNode {
