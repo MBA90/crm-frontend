@@ -1,28 +1,25 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { StoreComponent } from "@/store/StoreComponent";
+import { withRouter, type RouterProps } from "@/lib/withRouter";
 import { Icon } from "@/components/ui/Icon";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CompanyForm } from "@/components/forms/CompanyForm";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/ui/Toast";
-import { formatCompact } from "@/lib/format";
 import { avatarColor } from "@/lib/format";
 import type { Company } from "@/types";
 
-const OPEN = ["lead", "qualified", "proposal", "negotiation"];
-
+interface CompaniesProps {
+  router: RouterProps;
+}
 interface CompaniesState {
   query: string;
-  showForm: boolean;
-  editing: Company | null;
   deleting: Company | null;
 }
 
-export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
+class CompaniesBase extends StoreComponent<CompaniesProps, CompaniesState> {
   state: CompaniesState = {
     query: "",
-    showForm: false,
-    editing: null,
     deleting: null,
   };
 
@@ -38,21 +35,6 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
     );
   }
 
-  private statsFor(companyId: string): {
-    contacts: number;
-    deals: number;
-    pipeline: number;
-  } {
-    const s = this.store.getState();
-    const contacts = s.contacts.filter((c) => c.companyId === companyId).length;
-    const companyDeals = s.deals.filter((d) => d.companyId === companyId);
-    const deals = companyDeals.length;
-    const pipeline = companyDeals
-      .filter((d) => OPEN.includes(d.stage))
-      .reduce((sum, d) => sum + d.value, 0);
-    return { contacts, deals, pipeline };
-  }
-
   private confirmDelete = (): void => {
     if (!this.state.deleting) return;
     const name = this.state.deleting.name;
@@ -62,6 +44,7 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
   };
 
   render(): React.ReactNode {
+    const { navigate } = this.props.router;
     const rows = this.filtered();
     const total = this.store.getState().companies.length;
 
@@ -69,23 +52,20 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
       <>
         <div className="page-head">
           <div>
-            <h1>Companies</h1>
+            <h1>Accounts</h1>
             <p>{total} accounts in your workspace.</p>
           </div>
-          <button
-            className="btn btn--primary"
-            onClick={() => this.setState({ showForm: true, editing: null })}
-          >
+          <Link className="btn btn--primary" to="/accounts/new">
             <Icon name="plus" size={16} />
-            New company
-          </button>
+            New account request
+          </Link>
         </div>
 
         <div className="toolbar">
           <div className="search-inline">
             <Icon name="search" size={16} />
             <input
-              placeholder="Search companies…"
+              placeholder="Search accounts…"
               value={this.state.query}
               onChange={(e) => this.setState({ query: e.target.value })}
             />
@@ -96,14 +76,14 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
           <div className="card">
             <EmptyState
               icon="companies"
-              title="No companies found"
+              title="No accounts found"
               message={
                 this.state.query
                   ? "Try a different search."
-                  : "Add your first company to organize your contacts and deals."
+                  : "Submit an account request to get your first account approved."
               }
-              actionLabel="New company"
-              onAction={() => this.setState({ showForm: true, editing: null })}
+              actionLabel="New account request"
+              onAction={() => navigate("/accounts/new")}
             />
           </div>
         ) : (
@@ -114,105 +94,55 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
               gap: 16,
             }}
           >
-            {rows.map((co) => {
-              const st = this.statsFor(co.id);
-              return (
-                <div className="card" key={co.id}>
-                  <div className="card__body">
-                    <div className="row" style={{ alignItems: "flex-start" }}>
-                      <div
-                        className="avatar"
-                        style={{ background: avatarColor(co.id), borderRadius: 11 }}
+            {rows.map((co) => (
+              <div className="card" key={co.id}>
+                <div className="card__body">
+                  <div className="row" style={{ alignItems: "flex-start" }}>
+                    <div
+                      className="avatar"
+                      style={{ background: avatarColor(co.id), borderRadius: 11 }}
+                    >
+                      {co.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="cell-primary" style={{ fontSize: 15 }}>
+                        {co.name}
+                      </div>
+                      <div className="cell-sub">{co.industry || "—"}</div>
+                    </div>
+                    <div className="row-actions" style={{ opacity: 1 }}>
+                      <button
+                        className="icon-btn"
+                        aria-label="Delete"
+                        onClick={() => this.setState({ deleting: co })}
                       >
-                        {co.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="cell-primary" style={{ fontSize: 15 }}>
-                          {co.name}
-                        </div>
-                        <div className="cell-sub">{co.industry || "—"}</div>
-                      </div>
-                      <div className="row-actions" style={{ opacity: 1 }}>
-                        <button
-                          className="icon-btn"
-                          aria-label="Edit"
-                          onClick={() => this.setState({ showForm: true, editing: co })}
-                        >
-                          <Icon name="edit" size={16} />
-                        </button>
-                        <button
-                          className="icon-btn"
-                          aria-label="Delete"
-                          onClick={() => this.setState({ deleting: co })}
-                        >
-                          <Icon name="trash" size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div
-                      className="row"
-                      style={{ gap: 14, marginTop: 14, color: "var(--muted)", fontSize: 12.5 }}
-                    >
-                      {co.location && (
-                        <span className="row" style={{ gap: 5 }}>
-                          <Icon name="globe" size={13} /> {co.location}
-                        </span>
-                      )}
-                      <span className="row" style={{ gap: 5 }}>
-                        <Icon name="user" size={13} /> {co.size}
-                      </span>
-                    </div>
-
-                    <div className="divider" style={{ margin: "14px 0" }} />
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                        gap: 8,
-                        textAlign: "center",
-                      }}
-                    >
-                      <div>
-                        <div className="cell-num" style={{ fontSize: 17 }}>
-                          {st.contacts}
-                        </div>
-                        <div className="cell-sub">Contacts</div>
-                      </div>
-                      <div>
-                        <div className="cell-num" style={{ fontSize: 17 }}>
-                          {st.deals}
-                        </div>
-                        <div className="cell-sub">Deals</div>
-                      </div>
-                      <div>
-                        <div
-                          className="cell-num"
-                          style={{ fontSize: 17, color: "var(--primary)" }}
-                        >
-                          {formatCompact(st.pipeline)}
-                        </div>
-                        <div className="cell-sub">Pipeline</div>
-                      </div>
+                        <Icon name="trash" size={16} />
+                      </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
 
-        {this.state.showForm && (
-          <CompanyForm
-            existing={this.state.editing}
-            onClose={() => this.setState({ showForm: false, editing: null })}
-          />
+                  <div
+                    className="row"
+                    style={{ gap: 14, marginTop: 14, color: "var(--muted)", fontSize: 12.5 }}
+                  >
+                    {co.location && (
+                      <span className="row" style={{ gap: 5 }}>
+                        <Icon name="globe" size={13} /> {co.location}
+                      </span>
+                    )}
+                    <span className="row" style={{ gap: 5 }}>
+                      <Icon name="user" size={13} /> {co.size}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {this.state.deleting && (
           <ConfirmDialog
-            title="Delete company"
+            title="Delete account"
             message={`Delete ${this.state.deleting.name}? Linked contacts and deals will be unassigned.`}
             onConfirm={this.confirmDelete}
             onCancel={() => this.setState({ deleting: null })}
@@ -222,3 +152,5 @@ export class CompaniesPage extends StoreComponent<{}, CompaniesState> {
     );
   }
 }
+
+export const CompaniesPage = withRouter(CompaniesBase);

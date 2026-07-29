@@ -1,5 +1,9 @@
 import React from "react";
 import type { ContactStatus, DealStage, TaskPriority } from "@/types";
+import type {
+  WorkflowOverallStatus,
+  WorkflowRequestStepStatus,
+} from "@/types/workflowRequest";
 
 type Tone = "primary" | "teal" | "amber" | "rose" | "blue" | "gray";
 
@@ -74,6 +78,62 @@ export class PriorityBadge extends React.Component<{ priority: TaskPriority }> {
     return (
       <Badge tone={priorityTone[priority]} dot>
         {priority.charAt(0).toUpperCase() + priority.slice(1)}
+      </Badge>
+    );
+  }
+}
+
+const overallStatusTone: Record<WorkflowOverallStatus, Tone> = {
+  DRAFT: "gray",
+  IN_PROGRESS: "blue",
+  APPROVED: "teal",
+  REJECTED: "rose",
+  CANCELLED: "gray",
+  EXPIRED: "amber",
+};
+const overallStatusLabel: Record<WorkflowOverallStatus, string> = {
+  DRAFT: "Draft",
+  IN_PROGRESS: "In progress",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  CANCELLED: "Cancelled",
+  EXPIRED: "Expired",
+};
+
+export class WorkflowStatusBadge extends React.Component<{ status: WorkflowOverallStatus }> {
+  render(): React.ReactNode {
+    const { status } = this.props;
+    return (
+      <Badge tone={overallStatusTone[status]} dot>
+        {overallStatusLabel[status]}
+      </Badge>
+    );
+  }
+}
+
+const stepStatusTone: Record<WorkflowRequestStepStatus, Tone> = {
+  PENDING: "gray",
+  ACTIVE: "blue",
+  APPROVED: "teal",
+  REJECTED: "rose",
+  SKIPPED: "gray",
+  EXPIRED: "amber",
+};
+const stepStatusLabel: Record<WorkflowRequestStepStatus, string> = {
+  PENDING: "Pending",
+  ACTIVE: "Active",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  SKIPPED: "Skipped",
+  EXPIRED: "Expired",
+};
+
+export class StepStatusBadge extends React.Component<{ status: WorkflowRequestStepStatus }> {
+  render(): React.ReactNode {
+    const { status } = this.props;
+    return (
+      <Badge tone={stepStatusTone[status]} dot>
+        {stepStatusLabel[status]}
       </Badge>
     );
   }

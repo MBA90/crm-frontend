@@ -298,9 +298,16 @@ class AuthStore {
     const claims = decodeJwt<KeycloakClaims>(
       session.idToken ?? session.accessToken
     );
-    const realmRoles = claims.realm_access?.roles ?? [];
+    // Role mappers aren't guaranteed to be attached to the ID token, only to
+    // the access token (which is what the backend actually authorizes against).
+    // Decode roles from the access token specifically so `roles` always
+    // reflects what the API will accept, even when idToken is present but bare.
+    const roleClaims = session.idToken
+      ? decodeJwt<KeycloakClaims>(session.accessToken)
+      : claims;
+    const realmRoles = roleClaims.realm_access?.roles ?? [];
     const clientRoles =
-      claims.resource_access?.[oidcConfig.clientId]?.roles ?? [];
+      roleClaims.resource_access?.[oidcConfig.clientId]?.roles ?? [];
     return {
       sub: claims.sub,
       username: claims.preferred_username,
