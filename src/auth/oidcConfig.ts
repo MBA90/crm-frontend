@@ -21,7 +21,7 @@ export const oidcConfig = {
     env.VITE_OIDC_REDIRECT_URI ?? `${window.location.origin}/auth/callback`,
   postLogoutRedirectUri:
     env.VITE_OIDC_POST_LOGOUT_REDIRECT_URI ?? window.location.origin,
-  scope: env.VITE_OIDC_SCOPE ?? "openid profile email",
+  scope: env.VITE_OIDC_SCOPE ?? "openid crm-profile",
   /** Standard Keycloak OIDC endpoints, derived from the realm authority. */
   endpoints: {
     authorization: `${authority}/protocol/openid-connect/auth`,

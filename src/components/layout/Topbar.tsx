@@ -108,7 +108,7 @@ class TopbarBase extends React.Component<TopbarProps, TopbarState> {
           <Icon name="search" size={16} />
           <input
             type="text"
-            placeholder="Search contacts, companies, deals…"
+            placeholder="Search contacts, accounts, deals…"
             value={query}
             onChange={(e) => this.setState({ query: e.target.value, open: true })}
             onFocus={() => this.setState({ open: true })}
