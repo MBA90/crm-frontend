@@ -14,8 +14,9 @@ const NAV: NavDef[] = [
   { to: "/", label: "Dashboard", icon: "dashboard" },
   { to: "/deals", label: "Pipeline", icon: "deals" },
   { to: "/contacts", label: "Contacts", icon: "contacts" },
-  { to: "/companies", label: "Companies", icon: "companies" },
+  { to: "/companies", label: "Accounts", icon: "companies" },
   { to: "/tasks", label: "Tasks", icon: "tasks" },
+  { to: "/workflow-requests", label: "Workflow requests", icon: "activity" },
 ];
 
 export class Sidebar extends StoreComponent {

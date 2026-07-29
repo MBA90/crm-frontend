@@ -141,29 +141,6 @@ class CrmStore {
   }
 
   // ---- companies ---------------------------------------------------------
-  addCompany(data: Omit<Company, "id" | "createdAt">): Company {
-    const company: Company = { ...data, id: uid("co"), createdAt: todayISO() };
-    const activity = this.logActivity({
-      message: `New company ${company.name} created`,
-      kind: "company",
-    });
-    this.commit({
-      ...this.state,
-      companies: [company, ...this.state.companies],
-      activities: [activity, ...this.state.activities],
-    });
-    return company;
-  }
-
-  updateCompany(id: string, patch: Partial<Company>): void {
-    this.commit({
-      ...this.state,
-      companies: this.state.companies.map((c) =>
-        c.id === id ? { ...c, ...patch } : c
-      ),
-    });
-  }
-
   deleteCompany(id: string): void {
     this.commit({
       ...this.state,

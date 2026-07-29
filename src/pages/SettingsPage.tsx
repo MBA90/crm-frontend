@@ -104,7 +104,7 @@ export class SettingsPage extends StoreComponent<{}, SettingsState> {
                 >
                   {[
                     { label: "Contacts", value: c.contacts, icon: "contacts" as const },
-                    { label: "Companies", value: c.companies, icon: "companies" as const },
+                    { label: "Accounts", value: c.companies, icon: "companies" as const },
                     { label: "Deals", value: c.deals, icon: "deals" as const },
                     { label: "Tasks", value: c.tasks, icon: "tasks" as const },
                   ].map((item) => (
@@ -166,7 +166,7 @@ export class SettingsPage extends StoreComponent<{}, SettingsState> {
         {this.state.confirm === "clear" && (
           <ConfirmDialog
             title="Clear all data"
-            message="This permanently removes all contacts, companies, deals, and tasks. Continue?"
+            message="This permanently removes all contacts, accounts, deals, and tasks. Continue?"
             confirmLabel="Clear everything"
             onConfirm={() => {
               this.store.clearAll();

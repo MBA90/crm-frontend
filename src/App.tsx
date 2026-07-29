@@ -6,6 +6,9 @@ import { DealsPage } from "@/pages/DealsPage";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { ContactDetailPage } from "@/pages/ContactDetailPage";
 import { CompaniesPage } from "@/pages/CompaniesPage";
+import { NewAccountRequestPage } from "@/pages/NewAccountRequestPage";
+import { WorkflowRequestsPage } from "@/pages/WorkflowRequestsPage";
+import { WorkflowRequestDetailPage } from "@/pages/WorkflowRequestDetailPage";
 import { TasksPage } from "@/pages/TasksPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
@@ -32,6 +35,9 @@ export class App extends React.Component {
             <Route path="contacts" element={<ContactsPage />} />
             <Route path="contacts/:id" element={<ContactDetailPage />} />
             <Route path="companies" element={<CompaniesPage />} />
+            <Route path="accounts/new" element={<NewAccountRequestPage />} />
+            <Route path="workflow-requests" element={<WorkflowRequestsPage />} />
+            <Route path="workflow-requests/:id" element={<WorkflowRequestDetailPage />} />
             <Route path="tasks" element={<TasksPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

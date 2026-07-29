@@ -12,8 +12,10 @@ const TITLES: { match: (path: string) => boolean; title: string }[] = [
   { match: (p) => p === "/", title: "Dashboard" },
   { match: (p) => p.startsWith("/deals"), title: "Pipeline" },
   { match: (p) => p.startsWith("/contacts"), title: "Contacts" },
-  { match: (p) => p.startsWith("/companies"), title: "Companies" },
+  { match: (p) => p.startsWith("/companies"), title: "Accounts" },
+  { match: (p) => p.startsWith("/accounts"), title: "Accounts" },
   { match: (p) => p.startsWith("/tasks"), title: "Tasks" },
+  { match: (p) => p.startsWith("/workflow-requests"), title: "Workflow requests" },
   { match: (p) => p.startsWith("/settings"), title: "Settings" },
 ];
 

@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  /** crm-gateway base URL; defaults to http://localhost:8100. */
+  readonly VITE_API_BASE_URL?: string;
   /** Keycloak realm issuer, e.g. https://kc.example.com/realms/crm-realm */
   readonly VITE_OIDC_AUTHORITY?: string;
   /** Public client id registered in the realm (crm-spa). */
