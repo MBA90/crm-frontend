@@ -1,5 +1,6 @@
 import React from "react";
 import type { ContactStatus, DealStage, TaskPriority } from "@/types";
+import type { AccountStatus } from "@/types/account";
 import type {
   WorkflowOverallStatus,
   WorkflowRequestStepStatus,
@@ -37,6 +38,22 @@ export class ContactStatusBadge extends React.Component<{ status: ContactStatus 
     return (
       <Badge tone={statusTone[status]} dot>
         {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  }
+}
+
+const accountStatusTone: Record<AccountStatus, Tone> = {
+  Active: "teal",
+  Inactive: "gray",
+};
+
+export class AccountStatusBadge extends React.Component<{ status: AccountStatus }> {
+  render(): React.ReactNode {
+    const { status } = this.props;
+    return (
+      <Badge tone={accountStatusTone[status]} dot>
+        {status}
       </Badge>
     );
   }

@@ -656,6 +656,9 @@ tr:hover .row-actions {
   height: 16px;
   color: var(--muted);
 }
+.pagination__next-icon {
+  transform: rotate(180deg);
+}
 .seg {
   display: inline-flex;
   background: var(--surface);

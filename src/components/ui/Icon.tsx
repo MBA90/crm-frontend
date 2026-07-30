@@ -31,7 +31,8 @@ export type IconName =
   | "download"
   | "inbox"
   | "log-out"
-  | "log-in";
+  | "log-in"
+  | "eye";
 
 interface IconProps {
   name: IconName;
@@ -228,6 +229,12 @@ export class Icon extends React.Component<IconProps> {
       <>
         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
         <path d="M10 17l5-5-5-5M15 12H3" />
+      </>
+    ),
+    eye: (
+      <>
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
       </>
     ),
   };
