@@ -40,7 +40,6 @@ class WorkflowRequestDetailBase extends React.Component<
   }
 
   private load = async (): Promise<void> => {
-    debugger;
     const { id } = this.props.router.params;
     if (!id) return;
     this.setState({ loading: true, error: "" });
