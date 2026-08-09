@@ -10,6 +10,8 @@ import {
   createAccountWorkflowRequest,
   submitWorkflowRequest,
 } from "@/services/workflowRequestsApi";
+import { listCountries, listStates } from "@/services/locationsApi";
+import type { Country, State } from "@/types/location";
 import {
   ACCOUNT_TYPES,
   ACCOUNT_SOURCES,
@@ -21,6 +23,8 @@ import {
 } from "@/types/workflowRequest";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isAbort = (e: unknown): boolean => e instanceof DOMException && e.name === "AbortError";
 
 type FieldKey =
   | "legalName"
@@ -37,7 +41,10 @@ interface FormFields {
   taxId: string;
   industry: string;
   employeeBand: EmployeeBand | "";
+  /** Country *name* — what the account service stores. */
   country: string;
+  /** ISO-3166 alpha-2 of the selected country; drives the states lookup only. */
+  countryIso2: string;
   city: string;
   website: string;
   parentAccountId: string;
@@ -52,6 +59,13 @@ interface NewAccountRequestProps {
 
 interface NewAccountRequestState extends FormFields {
   errors: Partial<Record<FieldKey, string>>;
+  countries: Country[];
+  states: State[];
+  loadingCountries: boolean;
+  loadingStates: boolean;
+  /** Non-empty when the master-setup lookup fails; the field degrades to free text. */
+  countriesError: string;
+  statesError: string;
   submitting: boolean;
   submitError: string;
   /** Set once the draft request is created, so a failed submit can be retried
@@ -68,6 +82,7 @@ const emptyForm: FormFields = {
   industry: "",
   employeeBand: "",
   country: "",
+  countryIso2: "",
   city: "",
   website: "",
   parentAccountId: "",
@@ -84,10 +99,81 @@ class NewAccountRequestBase extends React.Component<
     ...emptyForm,
     ownerId: authStore.getState().user?.sub ?? "",
     errors: {},
+    countries: [],
+    states: [],
+    loadingCountries: true,
+    loadingStates: false,
+    countriesError: "",
+    statesError: "",
     submitting: false,
     submitError: "",
     draftRequestId: null,
     result: null,
+  };
+
+  private countriesAbort: AbortController | null = null;
+  private statesAbort: AbortController | null = null;
+
+  componentDidMount(): void {
+    void this.loadCountries();
+  }
+
+  componentWillUnmount(): void {
+    this.countriesAbort?.abort();
+    this.statesAbort?.abort();
+  }
+
+  private async loadCountries(): Promise<void> {
+    // A fresh controller per call: StrictMode mounts, unmounts, then re-mounts in dev,
+    // and a controller reused across that cycle would already be aborted.
+    this.countriesAbort?.abort();
+    const abort = new AbortController();
+    this.countriesAbort = abort;
+    this.setState({ loadingCountries: true, countriesError: "" });
+    try {
+      const countries = await listCountries(abort.signal);
+      countries.sort((a, b) => a.name.localeCompare(b.name));
+      this.setState({ countries, loadingCountries: false, countriesError: "" });
+    } catch (e) {
+      if (isAbort(e)) return;
+      this.setState({
+        loadingCountries: false,
+        countriesError:
+          e instanceof ApiError ? e.message : "Could not load the country list.",
+      });
+    }
+  }
+
+  private async loadStates(countryIso2: string): Promise<void> {
+    this.statesAbort?.abort();
+    const abort = new AbortController();
+    this.statesAbort = abort;
+    this.setState({ loadingStates: true, statesError: "", states: [] });
+    try {
+      const states = await listStates(countryIso2, abort.signal);
+      states.sort((a, b) => a.name.localeCompare(b.name));
+      this.setState({ states, loadingStates: false });
+    } catch (e) {
+      if (isAbort(e)) return;
+      this.setState({
+        loadingStates: false,
+        statesError: e instanceof ApiError ? e.message : "Could not load the city list.",
+      });
+    }
+  }
+
+  /** Selecting a country records its name (what gets submitted) and reloads the cities. */
+  private handleCountryChange = (iso2: string): void => {
+    const country = this.state.countries.find((c) => c.iso2 === iso2);
+    this.setState({
+      countryIso2: iso2,
+      country: country?.name ?? "",
+      city: "",
+      states: [],
+      statesError: "",
+      errors: { ...this.state.errors, country: undefined },
+    });
+    if (iso2) void this.loadStates(iso2);
   };
 
   private setField = <K extends keyof FormFields>(key: K, value: FormFields[K]): void => {
@@ -158,16 +244,72 @@ class NewAccountRequestBase extends React.Component<
   };
 
   private reset = (): void => {
+    this.statesAbort?.abort();
     this.setState({
       ...emptyForm,
       ownerId: authStore.getState().user?.sub ?? "",
       errors: {},
+      states: [],
+      loadingStates: false,
+      statesError: "",
       submitting: false,
       submitError: "",
       draftRequestId: null,
       result: null,
     });
   };
+
+  /** Cities come from the selected country's states; falls back to free text when the
+   *  lookup fails or the country has no states on record. */
+  private renderCityField(disabled: boolean): React.ReactNode {
+    const s = this.state;
+    const freeText = !!s.countriesError || !!s.statesError;
+
+    if (freeText) {
+      return (
+        <>
+          <input
+            value={s.city}
+            onChange={(e) => this.setField("city", e.target.value)}
+            disabled={disabled}
+          />
+          {s.statesError && (
+            <span className="hint">{s.statesError} Enter the city manually.</span>
+          )}
+        </>
+      );
+    }
+
+    const noStates = !!s.countryIso2 && !s.loadingStates && s.states.length === 0;
+    if (noStates) {
+      return (
+        <input
+          value={s.city}
+          onChange={(e) => this.setField("city", e.target.value)}
+          disabled={disabled}
+        />
+      );
+    }
+
+    let placeholder = "Select…";
+    if (!s.countryIso2) placeholder = "Select a country first";
+    else if (s.loadingStates) placeholder = "Loading cities…";
+
+    return (
+      <select
+        value={s.city}
+        onChange={(e) => this.setField("city", e.target.value)}
+        disabled={disabled || !s.countryIso2 || s.loadingStates}
+      >
+        <option value="">{placeholder}</option>
+        {s.states.map((st) => (
+          <option key={st.id} value={st.name}>
+            {st.name}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   render(): React.ReactNode {
     const { navigate } = this.props.router;
@@ -262,23 +404,40 @@ class NewAccountRequestBase extends React.Component<
 
               <div className="field">
                 <label>Country *</label>
-                <input
-                  className={s.errors.country ? "invalid" : ""}
-                  value={s.country}
-                  onChange={(e) => this.setField("country", e.target.value)}
-                  placeholder="e.g. Jordan"
-                  disabled={disabled}
-                />
+                {s.countriesError ? (
+                  <input
+                    className={s.errors.country ? "invalid" : ""}
+                    value={s.country}
+                    onChange={(e) => this.setField("country", e.target.value)}
+                    placeholder="e.g. Jordan"
+                    disabled={disabled}
+                  />
+                ) : (
+                  <select
+                    className={s.errors.country ? "invalid" : ""}
+                    value={s.countryIso2}
+                    onChange={(e) => this.handleCountryChange(e.target.value)}
+                    disabled={disabled || s.loadingCountries}
+                  >
+                    <option value="">
+                      {s.loadingCountries ? "Loading countries…" : "Select…"}
+                    </option>
+                    {s.countries.map((c) => (
+                      <option key={c.iso2} value={c.iso2}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {s.countriesError && (
+                  <span className="hint">{s.countriesError} Enter the country manually.</span>
+                )}
                 {s.errors.country && <span className="error-text">{s.errors.country}</span>}
               </div>
 
               <div className="field">
                 <label>City</label>
-                <input
-                  value={s.city}
-                  onChange={(e) => this.setField("city", e.target.value)}
-                  disabled={disabled}
-                />
+                {this.renderCityField(disabled)}
               </div>
 
               <div className="field">
